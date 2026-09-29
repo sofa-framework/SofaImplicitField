@@ -5,11 +5,13 @@ import numpy
 
 def Model():
     particules = Sofa.Core.Node("Particles")
-    particules.addObject("MechanicalObject", name="state", template="Vec3", position=[[-1,0,0],[0,0,0],[1,0,0]])
+    particules.addObject("MechanicalObject", name="state", template="Vec3", position=[[-1,1.5,0], [-0.5,1.5,0], 
+                                                                                      [0,1.5,0],
+                                                                                      [0.5,1.5,0], [1,1.5,0]])
     particules.addObject("UniformMass", name="mass", totalMass=1.0)
     
     child = particules.addChild("Child")
-    child.addObject("MechanicalObject", name="state", template="Vec1", position=[0,0,0])
+    child.addObject("MechanicalObject", name="state", template="Vec1", position=[0,0,0,0,0])
     child.addObject("SphericalField", name="field", center=[0,0,0], radius=1.0)
     child.addObject("ScalarFieldMapping", name="mapping", 
                          input=particules.state.linkpath, 
@@ -39,5 +41,5 @@ def createScene(root):
     model.state.showObject = True
     model.state.showObjectScale = 5.0
 
-    model.Child.addObject("StopperLagrangianConstraint", name="constraint", min=0.0, max=1.0, index=3)
+    model.Child.addObject("StopperLagrangianConstraint", name="constraint", min=0.00, max=100000.0, index=1)
     model.Child.addObject("GenericConstraintCorrection", name="correction", linearSolver=root.linearSolver.linkpath, ODESolver=root.odesolver.linkpath)

@@ -100,7 +100,7 @@ void ScalarFieldMapping::applyJT( const MechanicalParams* mparams, InDataVecDeri
     for (Size i = 0; i < dx.size(); ++i)
     {
         const Vec3d grad = field->getGradient(x[i]);
-        dx[i] += grad * dy[i].x();                           //< Because dy is in R so there is only one value
+        dx[i] += (grad * dy[i].x());                           //< Because dy is in R so there is only one value
     }
 }
 
@@ -115,16 +115,22 @@ void ScalarFieldMapping::applyJT( const ConstraintParams* mparams, InDataMatrixD
     auto dy = sofa::helper::getReadAccessor(dy_);
     auto field = l_field.get();
 
-    std::cout << "Constraint InDataMatrixDeriv:" << dx_ << std::endl;
-    std::cout << "Constraint OutDataMatrixDeriv:" << dy_ << std::endl;
+    auto rowIt = dy->begin();
+    auto rowEnd = dy->end();
 
-    // for (Size i = 0; i < dx.size(); ++i)
-    // {
-    //     const Vec3d grad = field->getGradient(x[i]);
-    //     dx[i] += grad * dy[i].x();                           //< Because dy is in R so there is only one value
-    // }
+    for(;rowIt != rowEnd;rowIt++)
+    {
+        auto o = dx->writeLine(rowIt.index());
+
+        auto colIt = rowIt.begin();
+        auto colEnd = rowIt.end();
+        for(;colIt!=colEnd;++colIt)
+        {
+            const Vec3d grad = field->getGradient(x[colIt.index()]);
+            o.addCol(colIt.index(), grad * colIt.val().x());
+        }
+    }
 }
-
 
 void ScalarFieldMapping::buildGeometricStiffnessMatrix(sofa::core::GeometricStiffnessMatrix* matrices)
 {
