@@ -1,7 +1,12 @@
+from sympy import root
+
 import Sofa
 import Sofa.Core
 from SofaImplicitField import ScalarField
 import numpy
+from xshape.primitives import *
+from xshape.transforms import *
+from xshape.operators import * 
 
 def Model():
     particules = Sofa.Core.Node("Particles")
@@ -12,10 +17,22 @@ def Model():
     
     child = particules.addChild("Child")
     child.addObject("MechanicalObject", name="state", template="Vec1", position=[0,0,0,0,0])
-    child.addObject("SphericalField", name="field", center=[0,0,0], radius=1.0)
+
+    child.addObject("SphericalField", name="fieldsphere", center=[0,0,0], radius=1.0)
+
+    child.addObject(
+         Difference(name="fieldsrc",
+               childA=Sphere(name="sphere", center=[0,0,0],radius=0.7),
+               childB=RoundedBox(center=[0.0,0.0,0.0],dimensions=[0.95,0.5,0.5], rounding_radius=0.1))
+      ) 
+    m1 = child.addObject("GridSampler", name="sampler", min=[-2,-2,-2], max=[2,2,2], resolution=[255,255,255])
+    m1.field.setLinkedBase(child.fieldsrc)
+    child.addObject("DiscreteGridField", name="field", buffer=m1.buffer.linkpath)
+
     child.addObject("ScalarFieldMapping", name="mapping", 
                          input=particules.state.linkpath, 
                          output=child.state.linkpath, field=child.field.linkpath)
+    child.addObject("FieldToGaussianSplat", name="gs", field=child.field.linkpath, resolution=[30,0,0])
 
     return particules
 
@@ -41,5 +58,5 @@ def createScene(root):
     model.state.showObject = True
     model.state.showObjectScale = 5.0
 
-    model.Child.addObject("StopperLagrangianConstraint", name="constraint", min=0.00, max=100000.0, index=1)
+    model.Child.addObject("StopperLagrangianConstraint", name="constraint", min=0.00, max=100000.0)
     model.Child.addObject("GenericConstraintCorrection", name="correction", linearSolver=root.linearSolver.linkpath, ODESolver=root.odesolver.linkpath)

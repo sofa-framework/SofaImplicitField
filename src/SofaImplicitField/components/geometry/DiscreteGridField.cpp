@@ -23,7 +23,7 @@
 #include <SofaImplicitField/components/geometry/DiscreteGridField.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaImplicitField/MHD.h>
-
+#include <Eigen/Dense>
 #include <bits/stdc++.h>
 #include <algorithm>
 
@@ -357,6 +357,14 @@ double DiscreteGridField::getValue(const Vec3d& position, int &)
 
     return value;
 }
+
+void DiscreteGridField::getHessian(const Vec3d& positions, type::Mat3x3d& result)
+{
+    // Creating a quadratic patch using grid values would be better.
+    double spacing = (d_max.getValue()[0] - d_min.getValue()[0])/d_resolution.getValue()[0];
+    return getHessianByCentralFiniteDifference(positions, spacing*1.01, result);
+}
+
 
 // Register in the Factory
 void registerDiscreteGridField(sofa::core::ObjectFactory* factory)

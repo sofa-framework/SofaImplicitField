@@ -56,12 +56,10 @@ void ScalarFieldMapping::apply( const MechanicalParams* mparams, OutDataVecCoord
     SOFA_UNUSED(mparams);
     if(!isComponentStateValid())
         return;
-
     auto in = sofa::helper::getReadAccessor(in_);
     auto out = sofa::helper::getWriteOnlyAccessor(out_);
     auto field = l_field.get();
     int domain{0};
-
     for(Size i=0; i<out.size(); i++)
     {
         sofa::core::eq(out[i], field->getValue(in[i],domain));
@@ -78,7 +76,6 @@ void ScalarFieldMapping::applyJ( const MechanicalParams* mparams, OutDataVecDeri
     auto dx = sofa::helper::getReadAccessor(dx_);
     auto dy = sofa::helper::getWriteOnlyAccessor(dy_);
     auto field = l_field.get();
-
     for (Size i = 0; i < x.size(); ++i)
     {
         const Vec3d grad = field->getGradient(x[i]);
@@ -96,7 +93,6 @@ void ScalarFieldMapping::applyJT( const MechanicalParams* mparams, InDataVecDeri
     auto dx = sofa::helper::getWriteOnlyAccessor(dx_);
     auto dy = sofa::helper::getReadAccessor(dy_);
     auto field = l_field.get();
-
     for (Size i = 0; i < dx.size(); ++i)
     {
         const Vec3d grad = field->getGradient(x[i]);
@@ -110,7 +106,6 @@ void ScalarFieldMapping::applyJT( const ConstraintParams* mparams, InDataMatrixD
     if(!isComponentStateValid())
         return;
     auto x = fromModel->readPositions();
-    auto y = toModel->readPositions();
     auto dx = sofa::helper::getWriteOnlyAccessor(dx_);
     auto dy = sofa::helper::getReadAccessor(dy_);
     auto field = l_field.get();
@@ -136,13 +131,10 @@ void ScalarFieldMapping::buildGeometricStiffnessMatrix(sofa::core::GeometricStif
 {
     if(!isComponentStateValid())
         return;
-
     const auto childForces = this->toModel->readTotalForces();
     const auto dJdx = matrices->getMappingDerivativeIn(this->fromModel).withRespectToPositionsIn(this->fromModel);
     const auto x = fromModel->readPositions();
-
     auto field = l_field.get();
-
     for (Size i = 0; i < x.size(); ++i)
     {
         const auto f = childForces[i];

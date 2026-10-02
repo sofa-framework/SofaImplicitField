@@ -134,7 +134,13 @@ public:
         SOFA_UNUSED(domain);
         PythonEnvironment::gil acquire;
 
-        PYBIND11_OVERLOAD(Vec3, ScalarField, getGradient, pos);
+        // Search if there is a python override,
+        pybind11::function override = pybind11::get_override(static_cast<const ScalarField*>(this),"getGradient");
+        if(!override){
+            return ScalarField::getGradient(pos, domain);
+        }
+
+        return py::cast<Vec3>(override(pos));
     }
 
     void getHessian(const Vec3 &pos, Mat3x3& h) override

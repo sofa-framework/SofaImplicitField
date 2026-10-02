@@ -54,6 +54,7 @@ namespace sofa::component::geometry
 namespace sofaimplicitfield::component::engine
 {
     extern void registerFieldToSurfaceMesh(sofa::core::ObjectFactory* factory);
+    extern void registerFieldToGaussianSplat(sofa::core::ObjectFactory* factory);
     extern void registerGridSampler(sofa::core::ObjectFactory* factory);
 }
 
@@ -112,6 +113,7 @@ void registerObjects(sofa::core::ObjectFactory* factory)
     sofaimplicitfield::mapping::registerScalarFieldMapping(factory);
     sofa::component::container::registerInterpolatedImplicitSurface(factory);
     sofa::component::geometry::registerDiscreteGridField(factory);
+    sofaimplicitfield::component::engine::registerFieldToGaussianSplat(factory);
     sofaimplicitfield::component::engine::registerFieldToSurfaceMesh(factory);
     sofaimplicitfield::component::engine::registerGridSampler(factory);
 }

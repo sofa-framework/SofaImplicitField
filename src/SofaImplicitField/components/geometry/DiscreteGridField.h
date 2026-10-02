@@ -64,6 +64,7 @@ public:
 
     double getValue(const Vec3d& position, int& domain) override;
     void getValues(const std::vector<Vec3d>& positions, std::vector<double>& results) override;
+    void getHessian(const Vec3d& positions, type::Mat3x3d& result) override;
 
     bool loadGridFromMHD( const char *filename ) ;
 
