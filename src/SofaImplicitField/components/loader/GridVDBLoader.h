@@ -19,65 +19,48 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_IMPLICIT_SPHERICALFIELD_H
-#define SOFA_IMPLICIT_SPHERICALFIELD_H
+#pragma once
+#include <SofaImplicitField/config.h>
 
-#include <SofaImplicitField/components/geometry/ScalarField.h>
+#include <sofa/core/loader/BaseLoader.h>
+#include <SofaImplicitField/components/geometry/DiscreteGridField.h>
+#include <openvdb/openvdb.h>
 
-namespace sofa
+namespace sofaimplicitfield::component::io
 {
 
-namespace component
+namespace
 {
+using sofa::core::objectmodel::Data;
+using sofa::type::Vec3;
+using sofa::type::Vec3u;
+using sofa::type::Vec3d;
+using sofa::core::loader::BaseLoader;
+}
 
-namespace geometry
-{
-
-namespace _sphericalfield_
-{
-
-using sofa::type::Vec3d ;
-
-class  SOFA_SOFAIMPLICITFIELD_API SphericalField  : public ScalarField
+class SOFA_SOFAIMPLICITFIELD_API GridVDBLoader : public BaseLoader
 {
 public:
-    SOFA_CLASS(SphericalField, ScalarField);
+    SOFA_CLASS(GridVDBLoader, BaseLoader);
 
-public:
-    SphericalField() ;
-    ~SphericalField() override { }
+    GridVDBLoader();
+    ~GridVDBLoader() override;
 
-    /// Inherited from BaseObject
-    void init() override ;
-    void reinit() override ;
+    void init() override;
+    bool load() override ;
 
-    /// Inherited from ScalarField.
-    double getValue(const Vec3d& Pos, int &domain) override ;
-    Vec3d getGradient(const Vec3d &Pos, int& domain) override ;
-    void getValueAndGradient(const Vec3d& pos, double& val, Vec3d& grad, int& domain) override ;
-
-    using ScalarField::getValue ;
-    using ScalarField::getGradient ;
-    using ScalarField::getValueAndGradient ;
-
-    Data<bool> d_inside; ///< If true the field is oriented inside (resp. outside) the sphere. (default = false)
-    Data<double> d_radiusSphere; ///< Radius of Sphere emitting the field. (default = 1)
-    Data<Vec3d> d_centerSphere; ///< Position of the Sphere Surface. (default=0 0 0)
-
-protected:
-    Vec3d m_center;
-    double m_radius;
-    bool m_inside;
+    Data<openvdb::FloatGrid::Ptr> d_vdbgrid;
 };
 
-} /// _sphericalfield_
+}
 
-using _sphericalfield_::SphericalField ;
+namespace sofa::core::objectmodel
+{
 
-} /// geometry
+/// Specialization for OpenVDB::FloaterGrid
+template<> bool Data<openvdb::FloatGrid::Ptr>::read( const std::string&);
+template<> void Data<openvdb::FloatGrid::Ptr>::printValue( std::ostream& ) const;
+template<> std::string Data<openvdb::FloatGrid::Ptr>::getValueString() const;
+template<> std::string Data<openvdb::FloatGrid::Ptr>::getDefaultValueString() const;
 
-} /// component
-
-} /// sofa
-
-#endif
+}

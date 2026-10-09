@@ -19,65 +19,45 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_IMPLICIT_SPHERICALFIELD_H
-#define SOFA_IMPLICIT_SPHERICALFIELD_H
+#pragma once
+#include <SofaImplicitField/config.h>
 
+#include <sofa/core/objectmodel/DataFileName.h>
 #include <SofaImplicitField/components/geometry/ScalarField.h>
+#include <SofaImplicitField/components/loader/GridVDBLoader.h>
 
-namespace sofa
+namespace sofa::component::geometry
 {
 
-namespace component
+namespace
 {
+using sofa::type::Vec3;
+using sofa::type::Vec3u;
+using sofa::type::Vec3d;
+}
 
-namespace geometry
-{
 
-namespace _sphericalfield_
-{
 
-using sofa::type::Vec3d ;
-
-class  SOFA_SOFAIMPLICITFIELD_API SphericalField  : public ScalarField
+class SOFA_SOFAIMPLICITFIELD_API SparseGridField : public virtual ScalarField
 {
 public:
-    SOFA_CLASS(SphericalField, ScalarField);
+    SOFA_CLASS(SparseGridField, ScalarField);
 
-public:
-    SphericalField() ;
-    ~SphericalField() override { }
+    SparseGridField();
+    ~SparseGridField() override;
 
-    /// Inherited from BaseObject
-    void init() override ;
-    void reinit() override ;
+    void init() override;
+    void draw(const sofa::core::visual::VisualParams*) override;
 
-    /// Inherited from ScalarField.
-    double getValue(const Vec3d& Pos, int &domain) override ;
-    Vec3d getGradient(const Vec3d &Pos, int& domain) override ;
-    void getValueAndGradient(const Vec3d& pos, double& val, Vec3d& grad, int& domain) override ;
+    double getValue(const Vec3d& position, int& domain) override;
+    void getValues(const std::vector<Vec3d>& positions, std::vector<double>& results) override;
 
-    using ScalarField::getValue ;
-    using ScalarField::getGradient ;
-    using ScalarField::getValueAndGradient ;
+    Vec3d getGradient(const Vec3d& position, int& domain) override;
+    void getHessian(const Vec3d& positions, type::Mat3x3d& result) override;
 
-    Data<bool> d_inside; ///< If true the field is oriented inside (resp. outside) the sphere. (default = false)
-    Data<double> d_radiusSphere; ///< Radius of Sphere emitting the field. (default = 1)
-    Data<Vec3d> d_centerSphere; ///< Position of the Sphere Surface. (default=0 0 0)
+    Data<bool> d_debugDraw;
 
-protected:
-    Vec3d m_center;
-    double m_radius;
-    bool m_inside;
+    Data<openvdb::FloatGrid::Ptr> d_vdbgrid;
 };
 
-} /// _sphericalfield_
-
-using _sphericalfield_::SphericalField ;
-
-} /// geometry
-
-} /// component
-
-} /// sofa
-
-#endif
+}

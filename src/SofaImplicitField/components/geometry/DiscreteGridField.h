@@ -19,81 +19,100 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFAIMPLICITFIELD_COMPONENT_DISCRETEGRIDFIELD_H
-#define SOFAIMPLICITFIELD_COMPONENT_DISCRETEGRIDFIELD_H
+#pragma once
 #include <SofaImplicitField/config.h>
 
 #include <sofa/core/objectmodel/DataFileName.h>
 #include <SofaImplicitField/components/geometry/ScalarField.h>
 
-namespace sofa
+
+namespace sofa::component::geometry
 {
 
-namespace component
+namespace
 {
-
-namespace geometry
-{
-
-namespace _discretegrid_
-{
-
+using sofa::type::Vec3;
+using sofa::type::Vec3u;
 using sofa::type::Vec3d;
+}
 
-class  SOFA_SOFAIMPLICITFIELD_API DomainCache
+class MemoryBuffer
 {
 public:
-    bool insideImg; // shows if the domain lies inside the valid image region or outside
-    Vec3d bbMin, bbMax; // bounding box (min and max) of the domain
-    double val[8]; // corner values of the domain
+    Vec3d spacing;
+    Vec3d scaling;
+    Vec3d min;
+    Vec3d max;
+    Vec3u resolution;
+    unsigned int size{0};
+    float*       data{nullptr};
+
+    void resize(const Vec3d& min_, const Vec3d& max_, const Vec3u& resolution_);
 };
+
 
 class SOFA_SOFAIMPLICITFIELD_API DiscreteGridField : public virtual ScalarField
 {
-
 public:
     SOFA_CLASS(DiscreteGridField, ScalarField);
 
-public:
     DiscreteGridField();
     ~DiscreteGridField() override;
 
     void init() override;
+    void draw(const sofa::core::visual::VisualParams*) override;
 
-    virtual double getValue( Vec3d &transformedPos );
-    double getValue( Vec3d &transformedPos, int &domain ) override;
-    int getDomain( Vec3d &pos, int ref_domain ) override { (void)pos; return ref_domain; }
+    double getValue(const Vec3d& position, int& domain) override;
+    void getValues(const std::vector<Vec3d>& positions, std::vector<double>& results) override;
+    void getHessian(const Vec3d& positions, type::Mat3x3d& result) override;
 
-    void setFilename(const std::string& filename) ;
-    bool loadGridFromMHD( const char *filename ) ;
+    //bool loadGridFromMHD( const char *filename ) ;
+    //sofa::core::objectmodel::DataFileName d_distanceMapHeader;
 
-    void updateCache( DomainCache *cache, Vec3d& pos );
-    int getNextDomain();
+    Data<Vec3d> d_min;                // bounding box (min)
+    Data<Vec3d> d_max;                // bounding box (max)
+    Data<Vec3u> d_resolution;         // resolution of the grid along each axis
 
-    sofa::core::objectmodel::DataFileName d_distanceMapHeader;
-    Data< int > d_maxDomains; ///< Number of domains available for caching
-    Data< double > dx; ///< x translation
-    Data< double > dy; ///< y translation
-    Data< double > dz; ///< z translation
+    Data<MemoryBuffer> d_buffer;
 
-    int m_usedDomains;              // number of domains already given out
-    unsigned int m_imgSize[3];      // number of voxels
-    double m_spacing[3];            // physical distance between two neighboring voxels
-    double m_scale[3];              // (1/spacing)
-    double m_imgMin[3], m_imgMax[3];  // physical locations of the centers of both corner voxels
-    float *m_imgData;               // raw data
+    Data<bool> d_debugDraw;
+
     unsigned int m_deltaOfs[8];     // offsets to define 8 corners of cube for interpolation
-    std::vector<DomainCache> m_domainCache;
+    bool empty();
+
+    class Modifier
+    {
+    public:
+        Modifier(DiscreteGridField* field){self=field;}
+        ~Modifier(){ self->getComponentState(); }
+        Modifier& resize(const Vec3u& resolution,
+                         const Vec3d& gridMin, const Vec3d& gridMax){
+
+            self->d_min.setValue(gridMin);
+            self->d_max.setValue(gridMax);
+            self->d_resolution.setValue(resolution);
+            return *this; } //< resize the grid and re-allocate the buffers
+    private:
+        DiscreteGridField* self;
+    };
+    Modifier modify(){ return Modifier(this); }
+    void refreshTrackers();
+
+private:
+    void internalUpdate(const MemoryBuffer& buffer);
+    void internalResize(const Vec3u& resolution, const Vec3d& min, const Vec3d& max);
+
 };
 
-} /// namespace _discretegrid_
-using _discretegrid_::DiscreteGridField ;
+}
 
-} /// namespace geometry
+namespace sofa::core::objectmodel
+{
 
-} /// namespace component
+/// Specialization for MemoryBuffer
+template<> bool Data<component::geometry::MemoryBuffer>::read( const std::string&);
+template<> void Data<component::geometry::MemoryBuffer>::printValue( std::ostream& ) const;
+template<> std::string Data<component::geometry::MemoryBuffer>::getValueString() const;
+template<> std::string Data<component::geometry::MemoryBuffer>::getDefaultValueString() const;
 
-} /// namespace sofa
-
-#endif
-
+}

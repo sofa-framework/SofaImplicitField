@@ -19,65 +19,57 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_IMPLICIT_SPHERICALFIELD_H
-#define SOFA_IMPLICIT_SPHERICALFIELD_H
+#include <SofaImplicitField/config.h>
+#include <SofaImplicitField/components/loader/MHDLoader.h>
+#include <SofaImplicitField/MHD.h>
 
-#include <SofaImplicitField/components/geometry/ScalarField.h>
+#include <sofa/core/visual/VisualParams.h>
 
-namespace sofa
+#include <sofa/core/ObjectFactory.h>
+using sofa::core::RegisterObject ;
+
+#include <fstream>
+
+namespace sofaimplicitfield::component::io
 {
 
-namespace component
+GridMHDLoader::GridMHDLoader(){}
+GridMHDLoader::~GridMHDLoader(){}
+
+void GridMHDLoader::init()
 {
+    Inherit1::init();
+    d_componentState = sofa::core::objectmodel::ComponentState::Valid;
+}
 
-namespace geometry
+bool GridMHDLoader::load()
 {
+    dmsg_info() << "Loading MHD file: " << d_filename;
 
-namespace _sphericalfield_
+    // -- Loading file
+    const char* filename = d_filename.getFullPath().c_str();
+    std::ifstream file(filename);
+    if (!file.good())
+    {
+        msg_error() << "Cannot read file '" << d_filename << "'.";
+        return false;
+    }
+
+    auto buffer = sofa::helper::getWriteOnlyAccessor(d_buffer);
+    bool loadSucceeded = sofaimplicitfield::loader::loadGridFromMHD(filename,
+                                                                    buffer->min, buffer->spacing,
+                                                                    buffer->resolution, buffer->data);
+
+    if(!loadSucceeded)
+        return false;
+    return true;
+}
+
+// Register in the Factory
+void registerGridMHDLoader(sofa::core::ObjectFactory* factory)
 {
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Load a MHD file storing a scalar field.")
+    .add< GridMHDLoader >());
+}
 
-using sofa::type::Vec3d ;
-
-class  SOFA_SOFAIMPLICITFIELD_API SphericalField  : public ScalarField
-{
-public:
-    SOFA_CLASS(SphericalField, ScalarField);
-
-public:
-    SphericalField() ;
-    ~SphericalField() override { }
-
-    /// Inherited from BaseObject
-    void init() override ;
-    void reinit() override ;
-
-    /// Inherited from ScalarField.
-    double getValue(const Vec3d& Pos, int &domain) override ;
-    Vec3d getGradient(const Vec3d &Pos, int& domain) override ;
-    void getValueAndGradient(const Vec3d& pos, double& val, Vec3d& grad, int& domain) override ;
-
-    using ScalarField::getValue ;
-    using ScalarField::getGradient ;
-    using ScalarField::getValueAndGradient ;
-
-    Data<bool> d_inside; ///< If true the field is oriented inside (resp. outside) the sphere. (default = false)
-    Data<double> d_radiusSphere; ///< Radius of Sphere emitting the field. (default = 1)
-    Data<Vec3d> d_centerSphere; ///< Position of the Sphere Surface. (default=0 0 0)
-
-protected:
-    Vec3d m_center;
-    double m_radius;
-    bool m_inside;
-};
-
-} /// _sphericalfield_
-
-using _sphericalfield_::SphericalField ;
-
-} /// geometry
-
-} /// component
-
-} /// sofa
-
-#endif
+}

@@ -1,6 +1,6 @@
 /******************************************************************************
-*                 SOFA, Simulation Open-Framework Architecture                *
-*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
+*       SOFA, Simulation Open-Framework Architecture, development version     *
+*                (c) 2006-2025 INRIA, USTL, UJF, CNRS, MGH                    *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,65 +19,48 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_IMPLICIT_SPHERICALFIELD_H
-#define SOFA_IMPLICIT_SPHERICALFIELD_H
+#pragma once
+#include <SofaImplicitField/config.h>
+#include <SofaImplicitField/components/loader/GridVDBLoader.h>
+#include <sofa/core/topology/BaseMeshTopology.h>
 
-#include <SofaImplicitField/components/geometry/ScalarField.h>
-
-namespace sofa
+////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace sofaimplicitfield::component::engine
 {
+using namespace sofa;
 
-namespace component
-{
+typedef sofa::core::topology::BaseMeshTopology::SeqTriangles SeqTriangles;
+typedef sofa::core::topology::BaseMeshTopology::SeqQuads SeqQuads;
+typedef sofa::core::topology::BaseMeshTopology::Triangle Triangle;
+typedef sofa::core::topology::BaseMeshTopology::Quad Quad;
+typedef sofa::type::vector<sofa::type::Vec3d> VecCoord;
 
-namespace geometry
-{
+using sofa::core::objectmodel::BaseComponent;
+using sofa::component::geometry::ScalarField;
+using sofa::core::visual::VisualParams ;
+using sofa::type::Vec3d;
+using sofa::type::Vec3u;
 
-namespace _sphericalfield_
-{
-
-using sofa::type::Vec3d ;
-
-class  SOFA_SOFAIMPLICITFIELD_API SphericalField  : public ScalarField
+class SparseGridToSurfaceMesh : public BaseComponent
 {
 public:
-    SOFA_CLASS(SphericalField, ScalarField);
+    SOFA_CLASS(SparseGridToSurfaceMesh, BaseComponent);
 
-public:
-    SphericalField() ;
-    ~SphericalField() override { }
-
-    /// Inherited from BaseObject
-    void init() override ;
-    void reinit() override ;
-
-    /// Inherited from ScalarField.
-    double getValue(const Vec3d& Pos, int &domain) override ;
-    Vec3d getGradient(const Vec3d &Pos, int& domain) override ;
-    void getValueAndGradient(const Vec3d& pos, double& val, Vec3d& grad, int& domain) override ;
-
-    using ScalarField::getValue ;
-    using ScalarField::getGradient ;
-    using ScalarField::getValueAndGradient ;
-
-    Data<bool> d_inside; ///< If true the field is oriented inside (resp. outside) the sphere. (default = false)
-    Data<double> d_radiusSphere; ///< Radius of Sphere emitting the field. (default = 1)
-    Data<Vec3d> d_centerSphere; ///< Position of the Sphere Surface. (default=0 0 0)
-
+    virtual void init() override ;
 protected:
-    Vec3d m_center;
-    double m_radius;
-    bool m_inside;
+    Data<openvdb::FloatGrid::Ptr> d_source;
+
+    Data<VecCoord>  d_outPoints;
+    Data<SeqTriangles>  d_outTriangles;
+    Data<SeqQuads>  d_outQuads;
+
+    Data<bool>          d_debugDraw;
+
+    SparseGridToSurfaceMesh() ;
+    virtual ~SparseGridToSurfaceMesh() ;
+
+    void updateIfNeeded();
 };
 
-} /// _sphericalfield_
+}
 
-using _sphericalfield_::SphericalField ;
-
-} /// geometry
-
-} /// component
-
-} /// sofa
-
-#endif
