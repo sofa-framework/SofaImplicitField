@@ -37,7 +37,6 @@ namespace sofa::component::geometry
 
 DiscreteGridField::DiscreteGridField()
     : ScalarField(),
-      d_distanceMapHeader( initData( &d_distanceMapHeader, "file", "MHD file for the distance map" ) ),
       d_min(initData( &d_min, {-0.5,-0.5,-0.5}, "min", "The min positions in world space" ) ),
       d_max(initData( &d_max, {0.5 ,0.5 ,0.5}, "max", "The max positions in world space" ) ),
       d_resolution(initData( &d_resolution, {10,10,10}, "resolution", "The resolution of each axis of the grid" ) ),
@@ -58,10 +57,6 @@ DiscreteGridField::DiscreteGridField()
     }, {});
 
     addUpdateCallback("updateFromData",{&d_buffer},[this](const sofa::core::DataTracker&){
-
-        /// Update the internal buffers when d_buffer change
-        std::cout << "WE ARE GOING TO UPDATE FROM DATA BUFFER: " << d_buffer.getCounter() << std::endl;
-
         /// Update the internal state
         auto buffer = sofa::helper::getReadAccessor(d_buffer);
         internalUpdate(buffer);
@@ -91,18 +86,6 @@ void DiscreteGridField::refreshTrackers()
 
 void DiscreteGridField::init()
 {
-    if(d_distanceMapHeader.isSet())
-    {
-        bool ok = loadGridFromMHD( d_distanceMapHeader.getFullPath().c_str() );
-        if (ok){
-            msg_info() << "Successfully loaded a distance map from file.";
-            d_componentState = sofa::core::objectmodel::ComponentState::Valid;
-        }
-        else{
-            d_componentState = sofa::core::objectmodel::ComponentState::Invalid;
-        }
-        return;
-    }
     std::cout << getPathName() << " init" << std::endl;
 
     if(!d_buffer.isSet()){
@@ -115,37 +98,6 @@ void DiscreteGridField::init()
 
     std::cout << getPathName() << " init done" << std::endl;
     d_componentState = sofa::core::objectmodel::ComponentState::Valid;
-}
-
-bool DiscreteGridField::loadGridFromMHD( const char *filename )
-{
-    auto buffer = sofa::helper::getWriteOnlyAccessor(d_buffer);
-
-    bool loadSucceeded = sofaimplicitfield::loader::loadGridFromMHD(filename,
-                                                                    buffer->min, buffer->spacing,
-                                                                    buffer->resolution, buffer->data);
-
-    if(!loadSucceeded)
-        return false;
-
-    // init remaining variables
-    // for (int d=0; d<3; d++)
-    // {
-    //     scaling[d] = 1.0/spacing[d];
-    //     max[d] = min[d] + (double)(resolution[d]-1)*spacing[d];
-    // }
-    // m_deltaOfs[0] = 0;
-    // m_deltaOfs[1] = 1;
-    // m_deltaOfs[2] = resolution[0];
-    // m_deltaOfs[3] = resolution[0]+1;
-
-    // unsigned int sliceSize = resolution[0]*resolution[1];
-    // m_deltaOfs[4] = m_deltaOfs[0] + sliceSize;
-    // m_deltaOfs[5] = m_deltaOfs[1] + sliceSize;
-    // m_deltaOfs[6] = m_deltaOfs[2] + sliceSize;
-    // m_deltaOfs[7] = m_deltaOfs[3] + sliceSize;
-
-    return true;
 }
 
 void MemoryBuffer::resize(const Vec3d& min_, const Vec3d& max_, const Vec3u& resolution_)

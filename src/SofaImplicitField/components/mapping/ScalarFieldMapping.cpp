@@ -62,7 +62,13 @@ void ScalarFieldMapping::apply( const MechanicalParams* mparams, OutDataVecCoord
     int domain{0};
     for(Size i=0; i<out.size(); i++)
     {
-        sofa::core::eq(out[i], field->getValue(in[i],domain));
+        auto value = field->getValue(in[i],domain);
+        if(value < -10 || value > 10)
+            std::cout << "WE AHVE A PARTICLE PROBLE FOR: " << value << std::endl;
+        if(std::isnan(value))
+            std::cout << "WE AHVE A NAN PARTICLE PROBLE FOR: " << value << std::endl;
+
+        sofa::core::eq(out[i], value);
     }
 }
 
@@ -78,6 +84,11 @@ void ScalarFieldMapping::applyJ( const MechanicalParams* mparams, OutDataVecDeri
     auto field = l_field.get();
     for (Size i = 0; i < x.size(); ++i)
     {
+        int domain=-1;
+        auto value = field->getValue(x[i],domain);
+        if(value < -10 || value > 10)
+            std::cout << "WE AHVE A PARTICLE PROBLE FOR: " << value << std::endl;
+
         const Vec3d grad = field->getGradient(x[i]);
         dy[i] = sofa::type::dot(grad, dx[i]);
     }
@@ -156,7 +167,7 @@ void ScalarFieldMapping::buildGeometricStiffnessMatrix(sofa::core::GeometricStif
 void registerScalarFieldMapping(sofa::core::ObjectFactory* factory)
 {
     factory->registerObjects(sofa::core::ObjectRegistrationData("Maps a positional field to its scalar field values.")
-    .add< ScalarFieldMapping >());
+                                 .add< ScalarFieldMapping >());
 }
 
 }
