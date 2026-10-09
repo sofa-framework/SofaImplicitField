@@ -14,7 +14,7 @@
 *                                                                             *
 * You should have received a copy of the GNU Lesser General Public License    *
 * along with this program. If not, see <http://www.gnu.org/licenses/>.        *
-*******************************************************************************
+******************************************************************************
 * Authors: The SOFA Team and external contributors (see Authors.txt)          *
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
@@ -41,18 +41,21 @@ namespace sofa::component::geometry::_StarShapedField_
 namespace sofaimplicitfield::mapping
 {
     extern void registerImplicitSurfaceMapping(sofa::core::ObjectFactory* factory);
+    extern void registerScalarFieldMapping(sofa::core::ObjectFactory* factory);
 }
 namespace sofa::component::container
 {
     extern void registerInterpolatedImplicitSurface(sofa::core::ObjectFactory* factory);
 }
-namespace sofa::component::geometry::_discretegrid_
+namespace sofa::component::geometry
 {
     extern void registerDiscreteGridField(sofa::core::ObjectFactory* factory);
 }
 namespace sofaimplicitfield::component::engine
 {
-extern void registerFieldToSurfaceMesh(sofa::core::ObjectFactory* factory);
+    extern void registerFieldToSurfaceMesh(sofa::core::ObjectFactory* factory);
+    extern void registerFieldToGaussianSplat(sofa::core::ObjectFactory* factory);
+    extern void registerGridSampler(sofa::core::ObjectFactory* factory);
 }
 
 namespace sofaimplicitfield
@@ -107,9 +110,12 @@ void registerObjects(sofa::core::ObjectFactory* factory)
     sofa::component::geometry::_sphericalfield_::registerSphericalField(factory);
     sofa::component::geometry::_StarShapedField_::registerStarShapedField(factory);
     sofaimplicitfield::mapping::registerImplicitSurfaceMapping(factory);
+    sofaimplicitfield::mapping::registerScalarFieldMapping(factory);
     sofa::component::container::registerInterpolatedImplicitSurface(factory);
-    sofa::component::geometry::_discretegrid_::registerDiscreteGridField(factory);
+    sofa::component::geometry::registerDiscreteGridField(factory);
+    sofaimplicitfield::component::engine::registerFieldToGaussianSplat(factory);
     sofaimplicitfield::component::engine::registerFieldToSurfaceMesh(factory);
+    sofaimplicitfield::component::engine::registerGridSampler(factory);
 }
 
 } /// sofaimplicitfield

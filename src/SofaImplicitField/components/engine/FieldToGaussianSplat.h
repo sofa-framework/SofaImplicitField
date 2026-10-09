@@ -1,6 +1,6 @@
 /******************************************************************************
-*                 SOFA, Simulation Open-Framework Architecture                *
-*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
+*       SOFA, Simulation Open-Framework Architecture, development version     *
+*                (c) 2006-2025 INRIA, USTL, UJF, CNRS, MGH                    *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,65 +19,56 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_IMPLICIT_SPHERICALFIELD_H
-#define SOFA_IMPLICIT_SPHERICALFIELD_H
-
+#pragma once
+#include <SofaImplicitField/config.h>
 #include <SofaImplicitField/components/geometry/ScalarField.h>
+#include <SofaImplicitField/components/geometry/DiscreteGridField.h>
 
-namespace sofa
+////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace sofaimplicitfield::component::engine
 {
 
-namespace component
-{
+namespace{
+    using namespace sofa;
+    using sofa::core::objectmodel::BaseComponent;
+    using sofa::core::visual::VisualParams;
+    using sofa::type::Vec3d;
+    using sofa::type::Vec1u;
+    using sofa::component::geometry::ScalarField;
+    using sofa::component::geometry::DiscreteGridField;
+}
 
-namespace geometry
-{
-
-namespace _sphericalfield_
-{
-
-using sofa::type::Vec3d ;
-
-class  SOFA_SOFAIMPLICITFIELD_API SphericalField  : public ScalarField
+class FieldToGaussianSplat : public BaseComponent
 {
 public:
-    SOFA_CLASS(SphericalField, ScalarField);
+    SOFA_CLASS(FieldToGaussianSplat, BaseComponent);
 
-public:
-    SphericalField() ;
-    ~SphericalField() override { }
+    void init() override;
+    void draw(const VisualParams* params) override;
 
-    /// Inherited from BaseObject
-    void init() override ;
-    void reinit() override ;
+    Data<Vec1u> d_resolution;
+    Data<Vec3d> d_min;
+    Data<Vec3d> d_max;
 
-    /// Inherited from ScalarField.
-    double getValue(const Vec3d& Pos, int &domain) override ;
-    Vec3d getGradient(const Vec3d &Pos, int& domain) override ;
-    void getValueAndGradient(const Vec3d& pos, double& val, Vec3d& grad, int& domain) override ;
+    Data<sofa::type::vector<Vec3d>> d_positions;
+    Data<sofa::type::vector<Vec3d>> d_normals;
+    Data<sofa::type::vector<double>> d_radius;
 
-    using ScalarField::getValue ;
-    using ScalarField::getGradient ;
-    using ScalarField::getValueAndGradient ;
-
-    Data<bool> d_inside; ///< If true the field is oriented inside (resp. outside) the sphere. (default = false)
-    Data<double> d_radiusSphere; ///< Radius of Sphere emitting the field. (default = 1)
-    Data<Vec3d> d_centerSphere; ///< Position of the Sphere Surface. (default=0 0 0)
+    double space;
+protected:
+    SingleLink<FieldToGaussianSplat, ScalarField,
+               BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> l_field;
 
 protected:
-    Vec3d m_center;
-    double m_radius;
-    bool m_inside;
+    FieldToGaussianSplat();
+    virtual ~FieldToGaussianSplat();
+
+private:
+    void computeBBox(const core::ExecParams* params, bool onlyVisible = false) override;
+    void updateInternalBuffer(const Vec1u& resolution, const Vec3d& min, const Vec3d& max);
+    void sampleField();
+    void iterate();
 };
 
-} /// _sphericalfield_
+}
 
-using _sphericalfield_::SphericalField ;
-
-} /// geometry
-
-} /// component
-
-} /// sofa
-
-#endif

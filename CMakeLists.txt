@@ -13,13 +13,16 @@ set(HEADER_FILES
     ${SOFAIMPLICITFIELD_SRC}/config.h.in
     ${SOFAIMPLICITFIELD_SRC}/initSofaImplicitField.h
     ${SOFAIMPLICITFIELD_SRC}/MarchingCube.h
+    ${SOFAIMPLICITFIELD_SRC}/MHD.h
 
     # This is backward compatibility
     ${SOFAIMPLICITFIELD_SRC}/deprecated/SphereSurface.h
     ${SOFAIMPLICITFIELD_SRC}/deprecated/ImplicitSurfaceContainer.h    # This is a backward compatibility file toward ScalarField
     ${SOFAIMPLICITFIELD_SRC}/deprecated/InterpolatedImplicitSurface.h # This is a backward compatibility file toward DiscreteGridField
 
+    ${SOFAIMPLICITFIELD_SRC}/components/engine/FieldToGaussianSplat.h
     ${SOFAIMPLICITFIELD_SRC}/components/engine/FieldToSurfaceMesh.h
+    ${SOFAIMPLICITFIELD_SRC}/components/engine/GridSampler.h
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/BottleField.h
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/DiscreteGridField.h
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/SphericalField.h
@@ -27,23 +30,28 @@ set(HEADER_FILES
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/StarShapedField.h
     ${SOFAIMPLICITFIELD_SRC}/components/mapping/ImplicitSurfaceMapping.h
     ${SOFAIMPLICITFIELD_SRC}/components/mapping/ImplicitSurfaceMapping.inl
+    ${SOFAIMPLICITFIELD_SRC}/components/mapping/ScalarFieldMapping.h
 )
 
 set(SOURCE_FILES
     ${SOFAIMPLICITFIELD_SRC}/initSofaImplicitField.cpp
     ${SOFAIMPLICITFIELD_SRC}/MarchingCube.cpp
+    ${SOFAIMPLICITFIELD_SRC}/MHD.cpp
 
     ## This is a backward compatibility..
     ${SOFAIMPLICITFIELD_SRC}/deprecated/SphereSurface.cpp
     ${SOFAIMPLICITFIELD_SRC}/deprecated/InterpolatedImplicitSurface.cpp
-    
+
+    ${SOFAIMPLICITFIELD_SRC}/components/engine/FieldToGaussianSplat.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/engine/FieldToSurfaceMesh.cpp
+    ${SOFAIMPLICITFIELD_SRC}/components/engine/GridSampler.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/BottleField.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/ScalarField.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/DiscreteGridField.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/SphericalField.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/geometry/StarShapedField.cpp
     ${SOFAIMPLICITFIELD_SRC}/components/mapping/ImplicitSurfaceMapping.cpp
+    ${SOFAIMPLICITFIELD_SRC}/components/mapping/ScalarFieldMapping.cpp
 )
 
 set(EXTRA_FILES
